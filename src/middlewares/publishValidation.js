@@ -1,7 +1,8 @@
 import joi from "joi";
 
 const linkSchema = joi.object({
-    link: joi.string().uri().regex(/^(http|https):\/\//).required()
+    link: joi.string().uri().regex(/^(http|https):\/\//).required(),
+    text: joi.string().min(0)
 })
 
 export function linkValidation (req, res, next){

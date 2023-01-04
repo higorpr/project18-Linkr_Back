@@ -10,13 +10,13 @@ export async function publishLink(req, res){
         return res.status(401).send("Unauthorized!")
     }
     
-    const {message, link} = req.body;
+    const {text, link} = req.body;
 
     try{
         const user = (await connection.query (`
-            SELECT u.username, u.image 
+            SELECT u.* 
             FROM users u JOIN sessions s 
-            ON u.id = s.userId 
+            ON u.id = s.user_id 
             WHERE s.token = $1`,[token])).rows;
         
         //User exists?
@@ -31,7 +31,7 @@ export async function publishLink(req, res){
 
         //Link exists?
         if(post.length !== 0){
-            res.send("This link already exists!").status(409);
+            return res.send("This link already exists!").status(409);
         }
 
         else {
@@ -40,12 +40,14 @@ export async function publishLink(req, res){
             INTO posts 
                 (text, link, user_id) 
             VALUES ($1, $2, $3)
-            `, [message, link, user[0].id])
-            res.sendStatus(201);
+            `, [text, link, user[0].id])
+            
+            return res.sendStatus(201);
+            
         }
 
     } catch(err) {
         console.log(err);
-        res.sendStatus(500);
+        return res.sendStatus(500);
     }
 }

@@ -2,7 +2,7 @@ import connection from '../db.js';
 import joi from 'joi';
 
 export async function signUpMiddlewares (req, res, next) {
-    const { email } = req.body;
+    const { email, password, username, image } = req.body;
 
     // Schema
     const schema = joi.object({
@@ -23,6 +23,7 @@ export async function signUpMiddlewares (req, res, next) {
 
     if (checkEmail.rows.length > 0) {   
         // Insert an alert
+        console.log('Email already used');
         return res.sendStatus(409)
     }
 

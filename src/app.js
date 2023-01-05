@@ -8,6 +8,9 @@ const app = express();
 
 app.use(cors());
 app.use(json());
+app.use(router)
+
+app.use(router);
 
 app.use(router);
 

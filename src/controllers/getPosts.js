@@ -1,4 +1,4 @@
-import connection from "../database/db.js";
+import { connection } from "../database/db.js";
 import urlMetadata from "url-metadata";
 
 async () => {

@@ -4,7 +4,7 @@ import { linkValidation } from "../middlewares/publishValidation.js";
 
 const publishRouter = Router();
 
-publishRouter.post("/",linkValidation,publishLink);
+publishRouter.post("/publish",linkValidation,publishLink);
 
 
 export default publishRouter;

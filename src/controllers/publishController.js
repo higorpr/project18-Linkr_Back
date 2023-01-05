@@ -21,7 +21,7 @@ export async function publishLink(req, res){
         
         //User exists?
         if(user.length === 0){
-            return res.send("User not Found!").status(404);
+            return res.status(404).send("User not Found!");
         }
 
         const post = (await connection.query(`
@@ -31,7 +31,7 @@ export async function publishLink(req, res){
 
         //Link exists?
         if(post.length !== 0){
-            return res.send("This link already exists!").status(409);
+            return res.status(409).send("This link already exists!");
         }
 
         else {

@@ -22,7 +22,6 @@ export async function signUpMiddlewares (req, res, next) {
     const checkEmail = await connection.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (checkEmail.rows.length > 0) {   
-        // Insert an alert
         console.log('Email already used');
         return res.sendStatus(409)
     }

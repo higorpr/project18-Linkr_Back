@@ -10,6 +10,7 @@
     "dev": "npx nodemon ./src/index.js"
   },
   "dependencies": {
+    "alert": "^5.1.4",
     "axios": "^1.2.2",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",

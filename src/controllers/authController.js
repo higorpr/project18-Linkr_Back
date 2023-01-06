@@ -29,3 +29,15 @@ export async function login(req, res) {
 
 	res.status(200).send(user);
 }
+
+export async function logout(req, res) {
+	const userId = res.locals.userId;
+
+	try {
+		await deleteSession(userId);
+	} catch (err) {
+		console.log(err.message);
+		return res.sendStatus(500);
+	}
+	res.sendStatus(202);
+}

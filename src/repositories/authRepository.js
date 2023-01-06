@@ -29,7 +29,7 @@ export async function getSession(userId) {
 }
 
 export async function deleteSession(userId) {
-    return connection.query(
+	return connection.query(
 		`
         DELETE FROM
             sessions
@@ -49,5 +49,19 @@ export async function postSession(userId, token) {
             ($1, $2)
     `,
 		[userId, token]
+	);
+}
+
+export async function getIdFromToken(token) {
+	return connection.query(
+		`
+        SELECT
+            *
+        FROM
+            sessions
+        WHERE
+            token = $1
+    `,
+		[token]
 	);
 }

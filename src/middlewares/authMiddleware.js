@@ -1,6 +1,6 @@
 import { loginSchema } from "../models/loginSchema.js";
 import { compareSync } from "bcrypt";
-import { getLoginData } from "../repositories/authRepository.js";
+import { getLoginData, getSession } from "../repositories/authRepository.js";
 
 export async function loginValidation(req, res, next) {
 	const loginInfo = req.body;
@@ -46,3 +46,4 @@ export async function loginValidation(req, res, next) {
 
 	next();
 }
+

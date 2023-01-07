@@ -1,14 +1,25 @@
 {
-  "name": "projeto18-linkr",
-  "type": "module",
+  "name": "project18-linkr_back",
   "version": "1.0.0",
-  "description": "Projeto 18 - Linkr",
+  "description": "Repository for the back-end of Driven's 18th project - Linkr",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./src/index.js",
-    "dev": "npx nodemon ./src/index.js"
+    "start": "node ./src/app.js",
+    "dev": "npx nodemon ./src/app.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/higorpr/project18-Linkr_Back.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/higorpr/project18-Linkr_Back/issues"
+  },
+  "homepage": "https://github.com/higorpr/project18-Linkr_Back#readme",
   "dependencies": {
     "alert": "^5.1.4",
     "axios": "^1.2.2",
@@ -18,6 +29,8 @@
     "express": "^4.18.2",
     "joi": "^17.7.0",
     "pg": "^8.8.0"
+    "url-metadata": "^2.5.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

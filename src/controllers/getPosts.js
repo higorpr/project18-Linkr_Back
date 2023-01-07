@@ -1,4 +1,4 @@
-import { connection } from "../database/db.js";
+import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
 
 export async function getPosts(req, res) {
@@ -18,19 +18,14 @@ export async function getPosts(req, res) {
 		const posts = query.rows;
 
 		for (i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].link).then(
-				function (metadata) {
-					posts[i] = {
-						linkImage: metadata.image,
-						linkTitle: metadata.title,
-						linkDescription: metadata.description,
-						...posts[i],
-					};
-				},
-				function (error) {
-					console.log(error);
-				}
-			);
+			await urlMetadata(posts[i].link).then(function (metadata) {
+				posts[i] = {
+					linkImage: metadata.image,
+					linkTitle: metadata.title,
+					linkDescription: metadata.description,
+					...posts[i],
+				};
+			});
 		}
 
 		res.status(200).send(posts);

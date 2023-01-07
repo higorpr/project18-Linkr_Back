@@ -1,15 +1,15 @@
-import connection from '../db.js';
+import connection from '../database/db.js';
 import joi from 'joi';
 
 export async function signUpMiddlewares (req, res, next) {
-    const { email, password, username, image } = req.body;
+    const { email } = req.body;
 
     // Schema
     const schema = joi.object({
         username: joi.string().required(),
         email: joi.string().email().required(),
         password: joi.string().required(),
-        image: joi.string().required()
+        image: joi.string().regex(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/).required()
     });
 
     // Validate

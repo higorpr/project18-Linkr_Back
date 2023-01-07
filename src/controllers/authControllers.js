@@ -1,4 +1,4 @@
-import connection from '../db.js';
+import connection from '../database/db.js';
 import bcrypt from 'bcrypt';
 
 export async function signUpControllers (req, res) {

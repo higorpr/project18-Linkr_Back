@@ -1,21 +1,24 @@
-import { connection } from "../database/db.js";
+import { getIdFromToken } from "../repositories/authRepository.js";
 
 export async function tokenValidation(req, res, next) {
-	const token = req.headers.authorization?.replace("Bearer ", "");
+	const { authorization } = req.headers;
+	const token = authorization?.replace("Bearer ", "");
+
+	if (!token) {
+		return res.sendStatus(400);
+	}
 
 	try {
-		const query = await connection.query(
-			"SELECT * FROM sessions WHERE token = $1",
-			[token]
-		);
-
-		if (query.rows.length) {
-			next();
-		} else {
-			res.sendStatus(401);
+		const userResponse = await getIdFromToken(token);
+		if (userResponse.rows.length === 0) {
+			return res.sendStatus(401);
 		}
+		const userId = userResponse.rows[0].user_id;
+		res.locals.userId = userId;
 	} catch (err) {
-		res.sendStatus(500);
-		console.log(err);
+		console.log(err.message);
+		return res.sendStatus(500);
 	}
+
+	next();
 }

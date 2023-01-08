@@ -64,4 +64,4 @@ export async function signUpControllers (req, res) {
     catch (error) {
         res.sendStatus(500);
     }
-}
+} 

@@ -10,10 +10,6 @@ app.use(cors());
 app.use(json());
 app.use(router)
 
-app.use(router);
-
-app.use(router);
-
 const port = process.env.PORT || 4000;
 
 app.listen(port, console.log(`App server running on port ${port}`));

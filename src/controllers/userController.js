@@ -1,4 +1,4 @@
-import connection from "../database/db.js";
+import connection from "../database/db.js"
 
 
 export async function getUserLinks(req, res){
@@ -16,9 +16,10 @@ export async function getUserLinks(req, res){
         }
 
         const posts = (await connection.query(`
-            SELECT * 
-            FROM posts 
-            WHERE user_id = $1 
+            SELECT u.username, u.id, u.image, p.* 
+            FROM users u JOIN posts p
+                ON  u.id = p.user_id
+            WHERE p.user_id = $1 
             ORDER BY created_at DESC 
             LIMIT 20;    
         `, [id])).rows;

@@ -1,4 +1,5 @@
 import connection from "../database/db.js";
+import { insertHashtags, insertPost, insertPostHashtag, searchHashtags, searchLink, searchUser } from "../repositories/publishRepository.js";
 
 export async function publishLink(req, res) {
 	const { authorization } = req.headers;
@@ -11,50 +12,28 @@ export async function publishLink(req, res) {
 	}
 
 	const { text, link } = req.body;
-
+	
 	try {
-		const user = (
-			await connection.query(
-				`
-            SELECT u.* 
-            FROM users u JOIN sessions s 
-            ON u.id = s.user_id 
-            WHERE s.token = $1`,
-				[token]
-			)
-		).rows;
-
-		//User exists?
-		if (user.length === 0) {
+		const user = await searchUser(token);
+			
+		if(!user){
 			return res.status(404).send("User not Found!");
 		}
 
-		const post = (
-			await connection.query(
-				`
-            SELECT * 
-            FROM posts 
-            WHERE link = $1;`,
-				[link]
-			)
-		).rows;
-
-		//Link exists?
-		if (post.length !== 0) {
+		const post = await searchLink(link);
+		if (post) {
 			return res.status(409).send("This link already exists!");
-		} else {
-			await connection.query(
-				`
-            INSERT 
-            INTO posts 
-                (text, link, user_id) 
-            VALUES ($1, $2, $3)
-            `,
-				[text, link, user[0].id]
-			);
-
-			return res.sendStatus(201);
 		}
+
+		const trends = searchHashtags(text);
+
+		
+		await insertPost(text, link, user.id);
+		await insertHashtags(trends);
+		await insertPostHashtag(link, trends);
+		
+		return res.sendStatus(201);
+	
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);

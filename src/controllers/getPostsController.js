@@ -25,7 +25,8 @@ export async function getPosts(req, res) {
             ON posts.id=liked_posts.post_id
             GROUP BY posts.id, users.username, users.image, users.id
             ORDER BY created_at DESC 
-            LIMIT 20;`[userId]
+            LIMIT 20;`,
+			[userId]
 		);
 		let i = 0;
 		const posts = query.rows;

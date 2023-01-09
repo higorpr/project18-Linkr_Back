@@ -10,6 +10,7 @@ export async function getPosts(req, res) {
                 users.username as username,
                 users.image as image,
                 COUNT(liked_posts.user_id) as likes,
+				($1=posts.user_id) as "ownPost",
                 EXISTS (
                     SELECT 
                         true 
@@ -22,10 +23,9 @@ export async function getPosts(req, res) {
             ON users.id=posts.user_id
             LEFT JOIN liked_posts
             ON posts.id=liked_posts.post_id
-            GROUP BY posts.id, users.username, users.image
+            GROUP BY posts.id, users.username, users.image, users.id
             ORDER BY created_at DESC 
-            LIMIT 20;`,
-			[userId]
+            LIMIT 20;`[userId]
 		);
 		let i = 0;
 		const posts = query.rows;

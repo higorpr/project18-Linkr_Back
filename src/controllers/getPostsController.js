@@ -1,18 +1,32 @@
-import  connection  from "../database/db.js";
+import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
 
 export async function getPosts(req, res) {
+	const userId = res.locals.userId;
 	try {
 		const query = await connection.query(
 			`SELECT 
                 posts.*,
                 users.username as username,
-                users.image as image 
+                users.image as image,
+                COUNT(liked_posts.user_id) as likes,
+				($1=posts.user_id) as "ownPost",
+                EXISTS (
+                    SELECT 
+                        true 
+                    FROM liked_posts 
+                    WHERE user_id=$1 
+                    AND post_id=posts.id
+                ) as "selfLike"
             FROM posts 
-            JOIN users
+            LEFT JOIN users
             ON users.id=posts.user_id
+            LEFT JOIN liked_posts
+            ON posts.id=liked_posts.post_id
+            GROUP BY posts.id, users.username, users.image, users.id
             ORDER BY created_at DESC 
-            LIMIT 20 `
+            LIMIT 20;`,
+			[userId]
 		);
 		let i = 0;
 		const posts = query.rows;
@@ -27,9 +41,7 @@ export async function getPosts(req, res) {
 						...posts[i],
 					};
 				},
-				function (error) {
-					console.log(error);
-				}
+				function (error) {}
 			);
 		}
 

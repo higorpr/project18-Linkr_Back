@@ -1,6 +1,6 @@
 import { loginSchema } from "../models/loginSchema.js";
 import { compareSync } from "bcrypt";
-import { getLoginData, getSession } from "../repositories/authRepository.js";
+import { getLoginData } from "../repositories/authRepository.js";
 import connection from '../database/db.js';
 import joi from 'joi';
 

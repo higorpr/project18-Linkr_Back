@@ -1,5 +1,7 @@
 import connection from "../database/db.js";
-import { insertHashtags, insertPost, insertPostHashtag, searchHashtags, searchLink, searchUser } from "../repositories/publishRepository.js";
+import { deleteFromPost, deleteFromPostHashtag,
+		 insertHashtags, insertPost, insertPostHashtag, 
+		 searchHashtags, searchLink, searchUser } from "../repositories/publishRepository.js";
 
 export async function publishLink(req, res) {
 	const { authorization } = req.headers;
@@ -38,4 +40,28 @@ export async function publishLink(req, res) {
 		console.log(err);
 		return res.sendStatus(500);
 	}
+}
+
+export async function deletePostFromBd(req, res){
+	const { authorization } = req.headers;
+	const { id } = req.params;
+
+	const token = authorization?.replace("Bearer ", "");
+
+	//if not logged in, must unauthorize publication
+	if (!token) {
+		return res.status(401).send("Unauthorized!");
+	}
+
+	try{
+		await deleteFromPostHashtag(id)
+		await deleteFromPost(id)
+
+		res.sendStatus(200);
+	} catch(err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
+	
+
 }

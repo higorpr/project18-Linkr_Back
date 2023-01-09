@@ -124,3 +124,24 @@ export async function insertPostHashtag(link, hashtags) {
 		);
 	}
 }
+
+export async function deleteFromPost(id){
+	const post = await connection.query(`
+		DELETE 
+		FROM posts
+		WHERE id = ($1)
+		;`
+		, [id]);
+	
+}
+
+export async function deleteFromPostHashtag(id){
+	const post_hashtag = await connection.query(`
+		DELETE 
+		FROM posts_hashtags 
+		WHERE post_id 
+			IN ($1)
+		RETURNING *;`
+		, [id]);
+	
+}

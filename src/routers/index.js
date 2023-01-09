@@ -5,6 +5,7 @@ import searchRouter from "./search.js";
 import authRouter from "./authRouter.js";
 import likeRouter from "./likeRouter.js";
 import userRouter from "./userRouter.js";
+import hashtagsRouter from "./hashtagsRouter.js";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.use(postsRouter);
 router.use(searchRouter);
 router.use(likeRouter);
 router.use(userRouter);
+router.use(hashtagsRouter);
 
 export default router;

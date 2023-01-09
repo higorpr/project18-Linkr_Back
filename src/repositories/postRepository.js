@@ -86,7 +86,7 @@ export async function getPostsbyHashtagName(userId, hashtag) {
         u.username AS username,
         u.image AS image,
         COUNT(lp.user_id) AS likes,
-        ($1=posts.user_id) as "ownPost",
+        ($1=p.user_id) as "ownPost",
         EXISTS (
             SELECT
                 true

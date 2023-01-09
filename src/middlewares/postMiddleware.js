@@ -37,12 +37,13 @@ export async function checkHashtag(req, res, next) {
 	try {
 		const allHashtagsRes = await getAllHashtags();
 		const allHashtags = allHashtagsRes.rows.map((h) => h.name);
-		if (!allHashtags.includes(hashtag)) return res.sendStatus(404);
+		if (!allHashtags.includes(hashtag.toLowerCase()))
+			return res.sendStatus(404);
 		res.locals.hashtag = hashtag;
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);
 	}
-	
+
 	next();
 }

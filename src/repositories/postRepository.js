@@ -110,6 +110,7 @@ export async function getPostsbyHashtagName(userId, hashtag) {
         u.username AS username,
         u.image AS image,
         COUNT(lp.user_id) AS likes,
+        ($1=p.user_id) as "ownPost",
         EXISTS (
             SELECT
                 true
@@ -125,11 +126,12 @@ export async function getPostsbyHashtagName(userId, hashtag) {
     LEFT JOIN posts_hashtags ph ON p.id = ph.post_id
     LEFT JOIN hashtags h ON ph.hashtag_id = h.id
     WHERE
-        h.name = $2
+        h.name = LOWER($2)
     GROUP BY
         p.id,
         u.username,
-        u.image
+        u.image, 
+        u.id
     ORDER BY
         p.created_at DESC
     LIMIT

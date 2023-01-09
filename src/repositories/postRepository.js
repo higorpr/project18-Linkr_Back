@@ -102,7 +102,7 @@ export async function getPostsbyHashtagName(userId, hashtag) {
     LEFT JOIN posts_hashtags ph ON p.id = ph.post_id
     LEFT JOIN hashtags h ON ph.hashtag_id = h.id
     WHERE
-        h.name = $2
+        h.name = LOWER($2)
     GROUP BY
         p.id,
         u.username,

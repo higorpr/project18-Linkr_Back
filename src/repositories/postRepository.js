@@ -2,7 +2,7 @@ import connection from "../database/db.js";
 
 export async function hashtagPosts(hashtag) {
 	return connection.query(
-		`
+        `
         SELECT 
             p.*
         FROM

@@ -43,7 +43,10 @@ export async function getPosts(req, res) {
 		const posts = query.rows;
 
 		for (i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].link).then(
+			await urlMetadata(posts[i].link, {
+				descriptionLength: 150,
+				timeout: 100,
+			}).then(
 				function (metadata) {
 					posts[i] = {
 						linkImage: metadata.image,
@@ -63,18 +66,20 @@ export async function getPosts(req, res) {
 	}
 }
 
-
 export async function getHashtagPosts(req, res) {
-	const hashtag = res.locals.hashtag
+	const hashtag = res.locals.hashtag;
 	const userId = res.locals.userId;
 
 	try {
-		const hashtagsResponse = await getPostsbyHashtagName(userId, hashtag)
+		const hashtagsResponse = await getPostsbyHashtagName(userId, hashtag);
 
 		const posts = hashtagsResponse.rows;
 
 		for (let i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].link).then(
+			await urlMetadata(posts[i].link, {
+				descriptionLength: 150,
+				timeout: 100,
+			}).then(
 				function (metadata) {
 					posts[i] = {
 						linkImage: metadata.image,

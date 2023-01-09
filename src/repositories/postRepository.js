@@ -24,13 +24,13 @@ export async function hashtagPosts(hashtag) {
 	);
 }
 
-export async function getAllPostIds () {
-    return connection.query(`
+export async function getAllPostIds() {
+	return connection.query(`
         SELECT
             id
         FROM
             posts;
-    `)
+    `);
 }
 
 export async function UsersLiked(postId) {
@@ -50,5 +50,42 @@ export async function UsersLiked(postId) {
             p.id = $1
     `,
 		[postId]
+	);
+}
+
+export async function updatePost(postId, text) {
+	return connection.query(
+		`
+        UPDATE
+            posts
+        SET
+           text = $1
+        WHERE
+            id = $2
+    `,
+		[text, postId]
+	);
+}
+
+export async function getHashtagId (hashtag) {
+    return connection.query(`
+        SELECT
+            id
+        FROM
+            hashtags
+        WHERE
+            name = $1
+    `,[hashtag])
+}
+
+export async function updatePostHashtag(postId, hashtagId) {
+	return connection.query(
+		`
+        INSERT INTO
+            posts_hashtags (post_id, hashtag_id)
+        VALUES
+            ($1,$2)     
+    `,
+		[postId, hashtagId]
 	);
 }

@@ -1,4 +1,15 @@
-import { hashtagPosts, UsersLiked } from "../repositories/postRepository.js";
+import {
+	getHashtagId,
+	hashtagPosts,
+	updatePost,
+	updatePostHashtag,
+	UsersLiked,
+} from "../repositories/postRepository.js";
+import {
+	insertHashtags,
+	insertPostHashtag,
+	searchHashtags,
+} from "../repositories/publishRepository.js";
 
 export async function getHashtagPosts(req, res) {
 	const { hashtag } = req.body;
@@ -28,4 +39,33 @@ export async function getUsersLiked(req, res) {
 		console.log(err);
 		return res.sendStatus(500);
 	}
+}
+
+export async function updatePostText(req, res) {
+	const { text } = req.body;
+	const { postId } = req.params;
+
+	try {
+		await updatePost(postId, text);
+
+		// Get hashtags
+		const tags = searchHashtags(text);
+
+		// Insert hashtags and get the ones that were inserted
+		const insertedTags = await insertHashtags(tags);
+		const cleanedTags = insertedTags.filter((tag) => tag !== false);
+
+		// Insert tags into middle table (get tagId and use it)
+		if (cleanedTags.length > 0) {
+			for (let i = 0; i < insertedTags.length; i++) {
+				const tagIdResponse = await getHashtagId(insertedTags[i]);
+				const tagId = tagIdResponse.rows[0].id;
+				await updatePostHashtag(postId, tagId);
+			}
+		}
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
+	res.sendStatus(200);
 }

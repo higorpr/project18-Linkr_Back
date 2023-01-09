@@ -1,29 +1,5 @@
 import connection from "../database/db.js";
 
-export async function hashtagPosts(hashtag) {
-	return connection.query(
-		`
-        SELECT 
-            p.*
-        FROM
-            posts p
-        JOIN
-            posts_hastag p_h
-        ON 
-            p.id = p_h.post_id
-        JOIN
-            hashtags h
-        ON
-            p_h.hashtag_id = h.id
-        WHERE
-            h.name = $1
-        LIMIT
-            20
-    `,
-		[hashtag]
-	);
-}
-
 export async function getAllPostIds() {
 	return connection.query(`
         SELECT
@@ -67,15 +43,18 @@ export async function updatePost(postId, text) {
 	);
 }
 
-export async function getHashtagId (hashtag) {
-    return connection.query(`
+export async function getHashtagId(hashtag) {
+	return connection.query(
+		`
         SELECT
             id
         FROM
             hashtags
         WHERE
             name = $1
-    `,[hashtag])
+    `,
+		[hashtag]
+	);
 }
 
 export async function updatePostHashtag(postId, hashtagId) {
@@ -87,5 +66,52 @@ export async function updatePostHashtag(postId, hashtagId) {
             ($1,$2)     
     `,
 		[postId, hashtagId]
+	);
+}
+
+export async function getAllHashtags() {
+	return connection.query(`
+        SELECT
+            name
+        FROM
+            hashtags;
+    `);
+}
+
+export async function getPostsbyHashtagName(userId, hashtag) {
+	return connection.query(
+		`
+    SELECT
+        p.*,
+        u.username AS username,
+        u.image AS image,
+        COUNT(lp.user_id) AS likes,
+        EXISTS (
+            SELECT
+                true
+            FROM
+                liked_posts lp
+            WHERE
+                user_id = $1 AND post_id = p.id
+        ) AS "selfLike"
+    FROM
+        posts p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN liked_posts lp ON p.id = lp.post_id
+    LEFT JOIN posts_hashtags ph ON p.id = ph.post_id
+    LEFT JOIN hashtags h ON ph.hashtag_id = h.id
+    WHERE
+        h.name = $2
+    GROUP BY
+        p.id,
+        u.username,
+        u.image
+    ORDER BY
+        p.created_at DESC
+    LIMIT
+        20;
+
+    `,
+		[userId, hashtag]
 	);
 }

@@ -120,13 +120,13 @@ export async function followUser(req, res){
 
 //This function returns the id's of users followed by another person
 export async function getUserFollows(req, res){
-	const {id} = req.body;
+	const {user_id} = req.body;
 	
 	try{
-		const following = (await connection.query(`
+		const following = (Object.values(await connection.query(`
 			SELECT followed_id 
 			FROM follows
-			WHERE follower_id = $1`,[id])).rows;
+			WHERE follower_id = $1`,[user_id])).rows);
 
 		res.status(200).send(following);
 	
@@ -134,4 +134,38 @@ export async function getUserFollows(req, res){
 		console.log(err);
 		res.sendStatus(500);
 	}
+}
+
+//This function deletes a row from followers table (Unfollow)
+export async function unfollowUser (req, res){
+	const {id} = req.params;
+	const {user_id} = req.body;
+
+	const following = (await connection.query(`
+		SELECT * 
+		FROM follows
+		WHERE followed_id = $1
+			AND follower_id = $2`,[id, user_id])).rows;
+
+	//Not following an user?
+	if(following.length === 0){
+		return res.status(404).send("This user is not been followed!");
+	}
+
+	try{
+		await connection.query(`
+			DELETE 
+			FROM follows 
+			WHERE follower_id = $1
+				AND
+				followed_id = $2;
+		`, [user_id, id]);
+
+		res.sendStatus(200);
+
+	} catch(err){
+		console.log(err);
+		res.sendStatus(500);
+	}
+
 }

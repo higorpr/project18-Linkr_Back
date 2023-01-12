@@ -27,7 +27,7 @@ export async function getPosts(req, res) {
             ORDER BY created_at DESC 
             LIMIT 20;`,
 			[userId]
-		);
+		); /*INSERIR JOIN follows ON users.id = follows.follower_id*/ 
 		let i = 0;
 		const posts = query.rows;
 

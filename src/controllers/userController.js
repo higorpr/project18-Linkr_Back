@@ -118,3 +118,20 @@ export async function followUser(req, res){
 	}
 }
 
+//This function returns the id's of users followed by another person
+export async function getUserFollows(req, res){
+	const {id} = req.body;
+	
+	try{
+		const following = (await connection.query(`
+			SELECT followed_id 
+			FROM follows
+			WHERE follower_id = $1`,[id])).rows;
+
+		res.status(200).send(following);
+	
+	} catch (err){
+		console.log(err);
+		res.sendStatus(500);
+	}
+}

@@ -3,18 +3,22 @@ import urlMetadata from "url-metadata";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
+	const rule = ''/*'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$2) OR pp.user_id=$2'*/
+	const id = '3';
+	const a = [userId]
 	try {
 		const query = await connection.query(
 			`SELECT 
 				p.text,
 				p.id,
+				pp.id as published_post_id,
 				p.created_at,
 				u.id as user_id,
 				u.username,
 				u.image,
 				json_build_object('link', p.link) as metadata,
-				COUNT(lp.post_id=p.id)::INTEGER as likes,
-				COUNT(c.user_id)::INTEGER as comments,
+				COUNT(DISTINCT lp.user_id)::INTEGER as likes,
+				COUNT(DISTINCT c.user_id)::INTEGER as commentsCount,
 				(pp.user_id=p.user_id) as shared,
 				($1=p.user_id) as "ownPost",
 				(SELECT 
@@ -81,13 +85,14 @@ export async function getPosts(req, res) {
 			LEFT JOIN liked_posts lp
 			ON lp.post_id=p.id
 			LEFT JOIN posts_hashtags ph
-			ON ph.post_id=p.id
+			ON ph.post_id=pp.post_id
 			LEFT JOIN hashtags h
 			ON ph.hashtag_id=h.id
-			GROUP BY  p.id, u.username, u.image, u.id, pp.user_id
-			ORDER BY created_at DESC 
+			${rule}
+			GROUP BY  p.id, u.username, u.image, u.id, pp.id
+			ORDER BY pp.created_at DESC 
 			LIMIT 20;`,
-			[userId]
+			a
 			);
 		let i = 0;
 		const posts = query.rows;

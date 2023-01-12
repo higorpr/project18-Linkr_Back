@@ -2,12 +2,12 @@ import connection from "../database/db.js";
 
 export async function postComment(req, res) {
 	const userId = res.locals.userId;
-	const body = req.body;
+	const comment = res.locals.comment;
 
 	try {
 		await connection.query(
 			"INSERT INTO comments (post_id, user_id, text) VALUES ($1, $2, $3)",
-			[body.post_id, userId, body.text]
+			[comment.post_id, userId, comment.text]
 		);
 
 		const query = await connection.query(
@@ -31,15 +31,12 @@ export async function postComment(req, res) {
             ON u.id = c.user_id
             WHERE p.id = $1
             `,
-			[body.post_id, userId]
+			[comment.post_id, userId]
 		);
 
-		const like = {
-			...query.rows[0],
-			selfLike: true,
-		};
+		const comments = query.rows;
 
-		res.status(201).send(like);
+		res.status(201).send(comments);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);

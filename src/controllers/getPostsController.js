@@ -3,7 +3,7 @@ import urlMetadata from "url-metadata";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
-	const rule = ''/*'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$2) OR pp.user_id=$2'*/
+	const rule = 'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1)'
 	const id = '3';
 	const a = [userId]
 	try {

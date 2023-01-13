@@ -27,8 +27,6 @@ export async function login(req, res) {
 		return res.sendStatus(500);
 	}
 
-	delete user.id;
-
 	res.status(200).send(user);
 }
 

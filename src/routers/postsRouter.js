@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPosts } from "../controllers/getPostsController.js";
+import { getPosts, timelineUpdate } from "../controllers/getPostsController.js";
 import {
 	getHashtagPosts,
 	getShares,
@@ -17,12 +17,17 @@ import { tokenValidation } from "../middlewares/tokenValidation.js";
 const postsRouter = Router();
 
 postsRouter.get("/posts", tokenValidation, getPosts);
+
 postsRouter.get(
 	"/posts/hashtag/:hashtag",
 	tokenValidation,
 	checkHashtag,
 	getHashtagPosts
 );
+
+postsRouter.get("/timelineUpdate", timelineUpdate)
+
+
 postsRouter.get("/posts/likes/:postId", checkPostIdParameter, getUsersLiked);
 postsRouter.put("/posts/:postId", tokenValidation, updatePostText);
 postsRouter.post(

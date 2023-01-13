@@ -13,7 +13,7 @@ export async function mainPost(rule, array) {
             json_build_object('link', p.link) as metadata,
             COUNT(DISTINCT lp.user_id)::INTEGER as likes,
             COUNT(DISTINCT c.user_id)::INTEGER as commentsCount,
-            (pp.user_id=p.user_id) as shared,
+            (pp.user_id<>p.user_id) as shared,
             ($1=p.user_id) as "ownPost",
             (SELECT 
                 row_to_json(row) 
@@ -23,7 +23,7 @@ export async function mainPost(rule, array) {
                     u2.username, 
                     u2.image 
                 FROM users u2 
-                WHERE p.user_id=u2.id
+                WHERE pp.user_id=u2.id
                 )row
             ) as originalUser,
             (SELECT 
@@ -70,10 +70,10 @@ export async function mainPost(rule, array) {
                 AND post_id=p.id
             ) as "selfLike"
         FROM published_posts pp
-        LEFT JOIN users u
-        ON pp.user_id=u.id
         LEFT JOIN posts p
         ON pp.post_id=p.id
+        LEFT JOIN users u
+        ON p.user_id=u.id
         LEFT JOIN comments c
         ON c.post_id=p.id
         LEFT JOIN liked_posts lp

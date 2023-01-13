@@ -7,7 +7,7 @@ let lastPostId = 0;
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
 	const rule =
-		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1)";
+		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1";
 	const array = [userId];
 
 	try {
@@ -37,7 +37,7 @@ export async function getPosts(req, res) {
 		lastPost = posts[0];
 		lastPostId = lastPost.id;
 
-		return res.send(posts);
+		return res.status(200).send(posts);
 	} catch (err) {
 		res.sendStatus(500);
 		console.log(err);
@@ -46,47 +46,30 @@ export async function getPosts(req, res) {
 
 export async function timelineUpdate(req, res) {
 	const userId = res.locals.userId;
+	const lastPostId = req.params.id;
 	let count = 0;
 	if (!lastPostId) {
 		console.log("erro no if");
 		return res.send("erro no if");
 	}
-
+	const rule =
+		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1 AND pp.id > $2";
+	const array = [userId, lastPostId];
+	console.log(userId);
 	try {
-		const query = await connection.query(
-			`
-		SELECT 
-		posts.*, 
-		users.username as username, 
-		users.image as image, 
-		COUNT(liked_posts.user_id) as likes, 
-		($1=posts.user_id) as "ownPost", 
-		EXISTS ( SELECT true FROM liked_posts 
-			WHERE user_id=$1 
-			AND post_id=posts.id ) as "selfLike" 
-			FROM posts 
-			LEFT JOIN users 
-			ON users.id=posts.user_id 
-			LEFT JOIN liked_posts 
-			ON posts.id=liked_posts.post_id 
-			WHERE posts.id > $2 
-			GROUP BY posts.id, users.username, users.image, users.id 
-			ORDER BY created_at 
-			DESC;`,
-			[userId, lastPostId]
-		);
+		const query = await mainPost(rule, array);
 
 		let i = 0;
 		const posts = query.rows;
 		count = posts.length;
-
+		console.log(count);
 		for (i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].link, {
+			await urlMetadata(posts[i].metadata?.link, {
 				descriptionLength: 150,
 				timeout: 100,
 			}).then(
 				function (metadata) {
-					posts[i] = {
+					posts[i].metadata = {
 						linkImage: metadata.image,
 						linkTitle: metadata.title,
 						linkDescription: metadata.description,

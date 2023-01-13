@@ -25,8 +25,7 @@ postsRouter.get(
 	getHashtagPosts
 );
 
-postsRouter.get("/timelineUpdate", timelineUpdate)
-
+postsRouter.get("/timelineUpdate/:id", tokenValidation, timelineUpdate);
 
 postsRouter.get("/posts/likes/:postId", checkPostIdParameter, getUsersLiked);
 postsRouter.put("/posts/:postId", tokenValidation, updatePostText);

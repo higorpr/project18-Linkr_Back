@@ -76,7 +76,7 @@ export async function getUserLinks(req, res) {
 //Function used to insert an user in followers table
 export async function followUser(req, res){
 	const {id} = req.params;
-	const {user_id} = req.body;
+	const user_id = res.locals.userId;
 
 	const followed = (await connection.query(`
 	SELECT * 
@@ -120,13 +120,21 @@ export async function followUser(req, res){
 
 //This function returns the id's of users followed by another person
 export async function getUserFollows(req, res){
-	const {user_id} = req.body;
+	const {id} = req.params;
+
+	const user_id = res.locals.userId;
 	
 	try{
-		const following = (Object.values(await connection.query(`
-			SELECT followed_id 
+		const following = (await connection.query(`
+			SELECT *
 			FROM follows
-			WHERE follower_id = $1`,[user_id])).rows);
+			WHERE follower_id = $1
+				AND followed_id = $2
+			`,[user_id, id])).rows;
+		
+		if(following.length === 0){
+			return res.status(404).send("User not Found!");
+		}
 
 		res.status(200).send(following);
 	
@@ -139,7 +147,7 @@ export async function getUserFollows(req, res){
 //This function deletes a row from followers table (Unfollow)
 export async function unfollowUser (req, res){
 	const {id} = req.params;
-	const {user_id} = req.body;
+	const user_id = res.locals.userId;
 
 	const following = (await connection.query(`
 		SELECT * 
@@ -168,4 +176,26 @@ export async function unfollowUser (req, res){
 		res.sendStatus(500);
 	}
 
+}
+
+export async function getFollowedUsers(req, res){
+
+	const user_id = res.locals.userId;
+	
+	try{
+		const following = (await connection.query(`
+			SELECT *
+			FROM follows
+			WHERE follower_id = $1
+			`,[user_id])).rows;
+		
+		if(following.length === 0){
+			return res.status(404).send('Users not found!');
+		}
+		res.status(200).send(following);
+	
+	} catch (err){
+		console.log(err);
+		res.sendStatus(500);
+	}
 }

@@ -2,6 +2,7 @@ import {
 	alreadyShared,
 	getAllHashtags,
 	getAllPostIds,
+	getHashtagId,
 } from "../repositories/postRepository.js";
 
 export async function checkPostIdParameter(req, res, next) {
@@ -36,11 +37,12 @@ export async function checkHashtag(req, res, next) {
 	}
 
 	try {
-		const allHashtagsRes = await getAllHashtags();
-		const allHashtags = allHashtagsRes.rows.map((h) => h.name);
-		if (!allHashtags.includes(hashtag.toLowerCase()))
-			return res.sendStatus(404);
-		res.locals.hashtag = hashtag;
+		const hashtagIdRes = await getHashtagId(hashtag)
+		if (hashtagIdRes.rows.lenght === 0) {
+			return res.sendStatus(404)
+		}
+		const hashtagId = hashtagIdRes.rows[0].id
+		res.locals.hashtagId = hashtagId;
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);

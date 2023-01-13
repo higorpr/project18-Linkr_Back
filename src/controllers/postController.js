@@ -13,6 +13,7 @@ import {
 } from "../repositories/publishRepository.js";
 import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
+import { mainPost } from "../repositories/mainPostRepository.js";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;

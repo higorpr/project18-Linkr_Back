@@ -10,7 +10,6 @@ export async function getPosts(req, res) {
 	const rule =
 		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1";
 	const array = [userId];
-
 	try {
 		let query;
 		if(req.query?.lastPost!==undefined){

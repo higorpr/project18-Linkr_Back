@@ -195,19 +195,20 @@ export async function getNumberShares(postId) {
 	return connection.query(
 		`
         SELECT
-            COUNT(pp.user_id) AS "numberOfShares"
-        FROM
-            published_posts pp
-        JOIN
-            posts p
-        ON
-            pp.post_id = p.id
-        WHERE
-            pp.post_id = $1
-        AND
-            pp.user_id <> p.user_id
-        GROUP BY
-            pp.post_id;
+	        COALESCE(
+		        (
+			        SELECT
+				        COUNT(pp.user_id)
+			        FROM
+				        published_posts pp
+				        JOIN posts p ON pp.post_id = p.id
+			        WHERE
+				        pp.post_id = $1
+				        AND pp.user_id <> p.user_id
+			        GROUP BY
+				        pp.post_id
+		        ),0
+	        )::INTEGER AS "numberOfShares";
     `,
 		[postId]
 	);

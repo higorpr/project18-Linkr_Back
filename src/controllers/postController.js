@@ -161,10 +161,10 @@ export async function getShares(req, res) {
 
 	try {
 		const response = await getNumberShares(postId);
-		const nShares = response.rows.map((r) => r.numberOfShares);
+		const nShares = response.rows[0];
+		return res.status(200).send(nShares);
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);
 	}
-	res.sendStatus(200);
 }

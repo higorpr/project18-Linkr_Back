@@ -71,8 +71,8 @@ export async function getPosts(req, res) {
 export async function getHashtagPosts(req, res) {
 	const userId = res.locals.userId;
 	const hashtagId = res.locals.hashtagId;
-	const rule = `WHERE h.id=${hashtagId}`;
-	const arr = [userId];
+	const rule = `WHERE h.id=$2`;
+	const arr = [userId, hashtagId];
 	try {
 		const query = await connection.query(
 			`SELECT 

@@ -3,8 +3,7 @@ import urlMetadata from "url-metadata";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
-	const rule = 'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1)'
-	const id = '3';
+	const rule = 'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id=$1'
 	const a = [userId]
 	try {
 		const query = await connection.query(
@@ -19,7 +18,7 @@ export async function getPosts(req, res) {
 				json_build_object('link', p.link) as metadata,
 				COUNT(DISTINCT lp.user_id)::INTEGER as likes,
 				COUNT(DISTINCT c.user_id)::INTEGER as commentsCount,
-				(pp.user_id=p.user_id) as shared,
+				(pp.user_id<>p.user_id) as shared,
 				($1=p.user_id) as "ownPost",
 				(SELECT 
 					row_to_json(row) 
@@ -76,10 +75,10 @@ export async function getPosts(req, res) {
 					AND post_id=p.id
 				) as "selfLike"
 			FROM published_posts pp
-			LEFT JOIN users u
-			ON pp.user_id=u.id
 			LEFT JOIN posts p
 			ON pp.post_id=p.id
+			LEFT JOIN users u
+			ON p.user_id=u.id
 			LEFT JOIN comments c
 			ON c.post_id=p.id
 			LEFT JOIN liked_posts lp

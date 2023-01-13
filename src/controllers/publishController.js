@@ -4,7 +4,7 @@ import { deleteFromPost, deleteFromPostHashtag,
 		 searchHashtags, searchLink, searchUser } from "../repositories/publishRepository.js";
 
 export async function publishLink(req, res) {
-	const { authorization } = req.headers;
+	/*const { authorization } = req.headers;
 
 	const token = authorization?.replace("Bearer ", "");
 
@@ -12,12 +12,11 @@ export async function publishLink(req, res) {
 	if (!token) {
 		return res.status(401).send("Unauthorized!");
 	}
-
+*/
 	const { text, link } = req.body;
 	
 	try {
-		const user = await searchUser(token);
-			
+		const user = "Higor";
 		if(!user){
 			return res.status(404).send("User not Found!");
 		}
@@ -30,7 +29,7 @@ export async function publishLink(req, res) {
 		const trends = searchHashtags(text);
 
 		
-		await insertPost(text, link, user.id);
+		await insertPost(text, link, 1);
 		await insertHashtags(trends);
 		await insertPostHashtag(link, trends);
 		
@@ -38,7 +37,7 @@ export async function publishLink(req, res) {
 	
 	} catch (err) {
 		console.log(err);
-		return res.sendStatus(500);
+		return res.sendStatus(500).send(err.message)
 	}
 }
 

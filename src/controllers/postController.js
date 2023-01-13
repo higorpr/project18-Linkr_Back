@@ -1,6 +1,8 @@
 import {
 	getHashtagId,
+	getNumberShares,
 	getPostsbyHashtagName,
+	postRetweet,
 	updatePost,
 	updatePostHashtag,
 	UsersLiked,
@@ -134,6 +136,32 @@ export async function updatePostText(req, res) {
 				await updatePostHashtag(postId, tagId);
 			}
 		}
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
+	res.sendStatus(200);
+}
+
+export async function postShare(req, res) {
+	const userId = res.locals.userId;
+	const postId = res.locals.postId;
+
+	try {
+		await postRetweet(userId, postId);
+		res.sendStatus(201);
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
+}
+
+export async function getShares(req, res) {
+	const postId = res.locals.postId;
+
+	try {
+		const response = await getNumberShares(postId);
+		const nShares = response.rows.map((r) => r.numberOfShares);
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);

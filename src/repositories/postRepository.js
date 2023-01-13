@@ -2,7 +2,7 @@ import connection from "../database/db.js";
 
 export async function hashtagPosts(hashtag) {
 	return connection.query(
-        `
+		`
         SELECT 
             p.*
         FROM
@@ -24,8 +24,8 @@ export async function hashtagPosts(hashtag) {
 	);
 }
 
-export async function getAllPostIds () {
-    return connection.query(`
+export async function getAllPostIds() {
+	return connection.query(`
         SELECT
             id
         FROM
@@ -139,5 +139,76 @@ export async function getPostsbyHashtagName(userId, hashtag) {
 
     `,
 		[userId, hashtag]
+	);
+}
+
+export async function postRetweet(userId, postId) {
+	return connection.query(
+		`
+        INSERT INTO
+            published_posts (post_id, user_id)
+        VALUES
+            ($1, $2)
+    `,
+		[postId, userId]
+	);
+}
+
+export async function selfShare(userId, postId) {
+	return connection.query(
+		`
+        SELECT
+        EXISTS(
+            SELECT
+                *
+            FROM
+                published_posts pp
+            JOIN
+                posts p
+            ON p.user_id = pp.user_id
+            WHERE
+                p.user_id = $1 AND pp.post_id = $2
+        ) AS "selfShare";
+    `,
+		[userId, postId]
+	);
+}
+
+export async function alreadyShared(userId, postId) {
+	return connection.query(
+		`
+        SELECT
+        EXISTS (
+            SELECT
+                *
+            FROM
+                published_posts pp
+            WHERE
+                pp.user_id = $1 AND pp.post_id = $2
+        ) as "alreadyShared"
+    `,
+		[userId, postId]
+	);
+}
+
+export async function getNumberShares(postId) {
+	return connection.query(
+		`
+        SELECT
+            COUNT(pp.user_id) AS "numberOfShares"
+        FROM
+            published_posts pp
+        JOIN
+            posts p
+        ON
+            pp.post_id = p.id
+        WHERE
+            pp.post_id = $1
+        AND
+            pp.user_id <> p.user_id
+        GROUP BY
+            pp.post_id;
+    `,
+		[postId]
 	);
 }

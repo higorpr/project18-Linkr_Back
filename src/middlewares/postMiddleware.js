@@ -1,4 +1,5 @@
 import {
+	alreadyShared,
 	getAllHashtags,
 	getAllPostIds,
 } from "../repositories/postRepository.js";
@@ -40,6 +41,26 @@ export async function checkHashtag(req, res, next) {
 		if (!allHashtags.includes(hashtag.toLowerCase()))
 			return res.sendStatus(404);
 		res.locals.hashtag = hashtag;
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
+
+	next();
+}
+
+export async function verifyShareUser(req, res, next) {
+	const userId = res.locals.userId;
+	const postId = res.locals.postId;
+
+	try {
+		const alredySharedPostRes = await alreadyShared(userId, postId);
+		const alreadySharedPost = alredySharedPostRes.rows[0].alreadyShared;
+		if (alreadySharedPost) {
+			return res
+				.status(409)
+				.send("You already shared this post with the world.");
+		}
 	} catch (err) {
 		console.log(err);
 		return res.sendStatus(500);

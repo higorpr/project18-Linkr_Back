@@ -83,11 +83,11 @@ CREATE TABLE "follows" (
 
 
 
-CREATE TABLE "shared_posts" (
+CREATE TABLE "published_posts" (
 	"id" serial NOT NULL,
 	"post_id" integer NOT NULL,
 	"user_id" integer NOT NULL,
-	"created_at" TIMESTAMP NOT NULL DEFAULT 'NOW()',
+	"created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
 	CONSTRAINT "shared_posts_pk" PRIMARY KEY ("id")
 );
 
@@ -121,16 +121,8 @@ ALTER TABLE "posts_comments" ADD CONSTRAINT "posts_comments_fk1" FOREIGN KEY ("c
 ALTER TABLE "follows" ADD CONSTRAINT "follows_fk0" FOREIGN KEY ("follower_id") REFERENCES "users"("id");
 ALTER TABLE "follows" ADD CONSTRAINT "follows_fk1" FOREIGN KEY ("followed_id") REFERENCES "users"("id");
 
-ALTER TABLE "shared_posts" ADD CONSTRAINT "shared_posts_fk0" FOREIGN KEY ("post_id") REFERENCES "posts"("id");
-ALTER TABLE "shared_posts" ADD CONSTRAINT "shared_posts_fk1" FOREIGN KEY ("user_id") REFERENCES "users"("id");
-
-
-
-
-
-
-
-
+ALTER TABLE "published_posts" ADD CONSTRAINT "published_posts_fk0" FOREIGN KEY ("post_id") REFERENCES "posts"("id");
+ALTER TABLE "published_posts" ADD CONSTRAINT "published_posts_fk1" FOREIGN KEY ("user_id") REFERENCES "users"("id");
 
 
 

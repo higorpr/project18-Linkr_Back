@@ -1,6 +1,8 @@
 import {
 	getHashtagId,
+	getNumberShares,
 	getPostsbyHashtagName,
+	postRetweet,
 	updatePost,
 	updatePostHashtag,
 	UsersLiked,
@@ -11,6 +13,7 @@ import {
 } from "../repositories/publishRepository.js";
 import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
+import { mainPost } from "../repositories/mainPostRepository.js";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
@@ -67,25 +70,27 @@ export async function getPosts(req, res) {
 }
 
 export async function getHashtagPosts(req, res) {
-	const hashtag = res.locals.hashtag;
 	const userId = res.locals.userId;
-
+	const hashtagId = res.locals.hashtagId;
+	const rule = `WHERE h.id=$2`;
+	const arr = [userId, hashtagId];
 	try {
-		const hashtagsResponse = await getPostsbyHashtagName(userId, hashtag);
+		const query = await mainPost(rule, arr);
 
-		const posts = hashtagsResponse.rows;
+		let i = 0;
+		const posts = query.rows;
 
-		for (let i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].link, {
+		for (i = 0; i < posts.length; i++) {
+			await urlMetadata(posts[i].metadata?.link, {
 				descriptionLength: 150,
 				timeout: 100,
 			}).then(
 				function (metadata) {
-					posts[i] = {
+					posts[i].metadata = {
 						linkImage: metadata.image,
 						linkTitle: metadata.title,
 						linkDescription: metadata.description,
-						...posts[i],
+						...posts[i].metadata,
 					};
 				},
 				function (error) {}
@@ -94,8 +99,8 @@ export async function getHashtagPosts(req, res) {
 
 		res.status(200).send(posts);
 	} catch (err) {
+		res.sendStatus(500);
 		console.log(err);
-		return res.sendStatus(500);
 	}
 }
 
@@ -139,4 +144,30 @@ export async function updatePostText(req, res) {
 		return res.sendStatus(500);
 	}
 	res.sendStatus(200);
+}
+
+export async function postShare(req, res) {
+	const userId = res.locals.userId;
+	const postId = res.locals.postId;
+
+	try {
+		await postRetweet(userId, postId);
+		res.sendStatus(201);
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
+}
+
+export async function getShares(req, res) {
+	const postId = res.locals.postId;
+
+	try {
+		const response = await getNumberShares(postId);
+		const nShares = response.rows[0];
+		return res.status(200).send(nShares);
+	} catch (err) {
+		console.log(err);
+		return res.sendStatus(500);
+	}
 }

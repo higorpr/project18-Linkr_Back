@@ -40,8 +40,8 @@ export async function getUserLinks(req, res) {
 				function (error) {}
 			);
 		}
-
-		res.status(200).send(posts);
+		const result = [user, posts];
+		res.status(200).send(result);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);

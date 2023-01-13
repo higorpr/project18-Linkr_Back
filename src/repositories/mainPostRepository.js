@@ -1,6 +1,6 @@
 import connection from "../database/db.js";
 
-export async function mainPost(rule, array) {
+export async function mainPost(rule, array, lastPost, firstPost) {
 	return connection.query(
 		`SELECT 
             p.text,

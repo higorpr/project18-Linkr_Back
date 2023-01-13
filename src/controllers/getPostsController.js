@@ -6,13 +6,18 @@ let lastPost = null;
 let lastPostId = 0;
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
+	
 	const rule =
 		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1";
 	const array = [userId];
 
 	try {
-		const query = await mainPost(rule, array);
-
+		let query;
+		if(req.query?.lastPost!==undefined){
+			query = await mainPost(rule, array, req.query?.lastPost, req.query?.firstPost);
+		} else{
+			query = await mainPost(rule, array);
+		}
 		let i = 0;
 		const posts = query.rows;
 
@@ -48,21 +53,18 @@ export async function timelineUpdate(req, res) {
 	const userId = res.locals.userId;
 	const lastPostId = req.params.id;
 	let count = 0;
-	if (!lastPostId) {
-		console.log("erro no if");
-		return res.send("erro no if");
-	}
+
 	const rule =
-		"WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1 AND pp.id > $2";
+		"WHERE (pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id = $1) AND pp.id > $2";
 	const array = [userId, lastPostId];
-	console.log(userId);
+	
 	try {
 		const query = await mainPost(rule, array);
 
 		let i = 0;
 		const posts = query.rows;
 		count = posts.length;
-		console.log(count);
+		
 		for (i = 0; i < posts.length; i++) {
 			await urlMetadata(posts[i].metadata?.link, {
 				descriptionLength: 150,

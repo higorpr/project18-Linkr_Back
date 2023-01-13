@@ -119,7 +119,7 @@ export async function getPosts(req, res) {
 		lastPost = posts[0];
 		lastPostId = lastPost.id;
 		
-		return res.send(lastPostId, posts)
+		return res.send(posts)
 	} catch (err) {
 		res.sendStatus(500);
 		console.log(err);

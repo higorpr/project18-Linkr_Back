@@ -7,7 +7,7 @@ let lastPostId = 0;
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
 	const rule = 'WHERE pp.user_id IN (SELECT followed_id  FROM follows WHERE follower_id=$1) OR pp.user_id=$1'
-	const a = [userId]
+	const array = [userId]
 	try {
 		const query = await mainPost(rule, array);
 

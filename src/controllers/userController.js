@@ -1,9 +1,10 @@
 import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
 import { mainPost } from "../repositories/mainPostRepository.js";
+import async from "async";
 
 export async function getUserLinks(req, res) {
-	const { id } = req.params;
+	const { id, lastPost, firstPost } = req.query;
 
 	try {
 		const user = (
@@ -23,25 +24,38 @@ export async function getUserLinks(req, res) {
 		const rule = "WHERE pp.user_id = $1";
 		const array = [id];
 
-		const posts = (await mainPost(rule, array)).rows;
+		const posts = (await mainPost(rule, array, lastPost, firstPost)).rows;
 
-		let i;
-
-		for (i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].metadata?.link).then(
-				function (metadata) {
-					posts[i].metadata = {
-						linkImage: metadata.image,
-						linkTitle: metadata.title,
-						linkDescription: metadata.description,
-						...posts[i],
-					};
-				},
-				function (error) {}
-			);
-		}
-		const result = [user, posts];
-		res.status(200).send(result);
+		async.forEachOf(
+			posts,
+			function (post, index, callback) {
+				urlMetadata(post.metadata?.link, {
+					descriptionLength: 150,
+					timeout: 1000,
+				}).then(
+					function (metadata) {
+						post.metadata = {
+							linkImage: metadata.image,
+							linkTitle: metadata.title,
+							linkDescription: metadata.description,
+							source: metadata.source,
+							...post.metadata,
+						};
+						posts[index] = post;
+						callback(null);
+					},
+					function (error) {
+						callback(null);
+					}
+				);
+			},
+			function (err) {
+				if (!err) {
+					const result = [user, posts];
+					res.status(200).send(result);
+				}
+			}
+		);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);
@@ -191,6 +205,39 @@ export async function getFollowedUsers(req, res) {
 			return res.status(404).send("Users not found!");
 		}
 		res.status(200).send(following);
+	} catch (err) {
+		console.log(err);
+		res.sendStatus(500);
+	}
+}
+
+export async function getUserProfile(req, res) {
+	const user_id = res.locals.userId;
+	const userProfileId = req.params.id;
+
+	try {
+		const userProfile = (
+			await connection.query(
+				`
+			SELECT
+				u.image,
+				u.username,
+				EXISTS (
+					SELECT 
+						true 
+					FROM follows 
+					WHERE follower_id=$1 
+					AND followed_id=$2
+				) as "following",
+				($1=$2) as "selfProfile"
+			FROM users u
+			WHERE u.id=$2
+		`,
+				[user_id, userProfileId]
+			)
+		).rows;
+
+		res.status(200).send(userProfile);
 	} catch (err) {
 		console.log(err);
 		res.sendStatus(500);

@@ -30,18 +30,18 @@ export async function checkPostIdParameter(req, res, next) {
 }
 
 export async function checkHashtag(req, res, next) {
-	const { hashtag } = req.params;
+	const { hashtag } = req.query;
 
 	if (!hashtag) {
 		return res.sendStatus(400);
 	}
 
 	try {
-		const hashtagIdRes = await getHashtagId(hashtag)
+		const hashtagIdRes = await getHashtagId(hashtag);
 		if (hashtagIdRes.rows.lenght === 0) {
-			return res.sendStatus(404)
+			return res.sendStatus(404);
 		}
-		const hashtagId = hashtagIdRes.rows[0].id
+		const hashtagId = hashtagIdRes.rows[0].id;
 		res.locals.hashtagId = hashtagId;
 	} catch (err) {
 		console.log(err);

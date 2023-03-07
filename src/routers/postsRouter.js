@@ -16,10 +16,10 @@ import { tokenValidation } from "../middlewares/tokenValidation.js";
 
 const postsRouter = Router();
 
-postsRouter.get("/posts", tokenValidation, getPosts);
+postsRouter.get("/posts:lastPost?:firstPost?", tokenValidation, getPosts);
 
 postsRouter.get(
-	"/posts/hashtag/:hashtag",
+	"/posts/hashtag:hashtag?:lastPost?:firstPost?",
 	tokenValidation,
 	checkHashtag,
 	getHashtagPosts

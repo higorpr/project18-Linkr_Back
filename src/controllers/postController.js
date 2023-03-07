@@ -8,12 +8,14 @@ import {
 	UsersLiked,
 } from "../repositories/postRepository.js";
 import {
+	deleteFromPostHashtag,
 	insertHashtags,
 	searchHashtags,
 } from "../repositories/publishRepository.js";
 import connection from "../database/db.js";
 import urlMetadata from "url-metadata";
 import { mainPost } from "../repositories/mainPostRepository.js";
+import async from "async";
 
 export async function getPosts(req, res) {
 	const userId = res.locals.userId;
@@ -74,30 +76,40 @@ export async function getHashtagPosts(req, res) {
 	const hashtagId = res.locals.hashtagId;
 	const rule = `WHERE h.id=$2`;
 	const arr = [userId, hashtagId];
+	const { lastPost, firstPost } = req.query;
+
 	try {
-		const query = await mainPost(rule, arr);
+		const posts = (await mainPost(rule, arr, lastPost, firstPost)).rows;
 
-		let i = 0;
-		const posts = query.rows;
-
-		for (i = 0; i < posts.length; i++) {
-			await urlMetadata(posts[i].metadata?.link, {
-				descriptionLength: 150,
-				timeout: 100,
-			}).then(
-				function (metadata) {
-					posts[i].metadata = {
-						linkImage: metadata.image,
-						linkTitle: metadata.title,
-						linkDescription: metadata.description,
-						...posts[i].metadata,
-					};
-				},
-				function (error) {}
-			);
-		}
-
-		res.status(200).send(posts);
+		async.forEachOf(
+			posts,
+			function (post, index, callback) {
+				urlMetadata(post.metadata?.link, {
+					descriptionLength: 150,
+					timeout: 1000,
+				}).then(
+					function (metadata) {
+						post.metadata = {
+							linkImage: metadata.image,
+							linkTitle: metadata.title,
+							linkDescription: metadata.description,
+							source: metadata.source,
+							...post.metadata,
+						};
+						posts[index] = post;
+						callback(null);
+					},
+					function (error) {
+						callback(null);
+					}
+				);
+			},
+			function (err) {
+				if (!err) {
+					res.status(200).send(posts);
+				}
+			}
+		);
 	} catch (err) {
 		res.sendStatus(500);
 		console.log(err);
@@ -122,6 +134,7 @@ export async function updatePostText(req, res) {
 	const { postId } = req.params;
 
 	try {
+		await deleteFromPostHashtag(postId);
 		await updatePost(postId, text);
 
 		// Get hashtags
@@ -129,15 +142,12 @@ export async function updatePostText(req, res) {
 
 		// Insert hashtags and get the ones that were inserted
 		const insertedTags = await insertHashtags(tags);
-		const cleanedTags = insertedTags.filter((tag) => tag !== false);
 
 		// Insert tags into middle table (get tagId and use it)
-		if (cleanedTags.length > 0) {
-			for (let i = 0; i < insertedTags.length; i++) {
-				const tagIdResponse = await getHashtagId(insertedTags[i]);
-				const tagId = tagIdResponse.rows[0].id;
-				await updatePostHashtag(postId, tagId);
-			}
+		for (let i = 0; i < tags.length; i++) {
+			const tagIdResponse = await getHashtagId(tags[i]);
+			const tagId = tagIdResponse.rows[0].id;
+			await updatePostHashtag(postId, tagId);
 		}
 	} catch (err) {
 		console.log(err);

@@ -93,23 +93,41 @@ export async function insertHashtags(arr) {
 }
 
 export async function insertPost(text, link, id) {
-	await connection.query(
-		`
+	const postId = (
+		await connection.query(
+			`
         INSERT 
         INTO posts 
             (text, link, user_id) 
         VALUES ($1, $2, $3)
+		RETURNING id
     `,
-		[text, link, id]
-	);
+			[text, link, id]
+		)
+	).rows[0].id;
+	return postId;
 }
 
-export async function insertPostHashtag(link, hashtags) {
+export async function insertPublishedPost(id, postId) {
+	const publishedPostId = (
+		await connection.query(
+			`
+        INSERT 
+        INTO published_posts 
+            (user_id, post_id) 
+        VALUES ($1, $2)
+		RETURNING id
+    `,
+			[id, postId]
+		)
+	).rows[0];
+	return publishedPostId;
+}
+
+export async function insertPostHashtag(hashtags, postId) {
 	if (hashtags.length === 0) {
 		return;
 	}
-
-	const post = await searchLink(link);
 
 	for (let i = 0; i < hashtags.length; i++) {
 		const hashtag = await searchTrend(hashtags[i]);
@@ -120,28 +138,66 @@ export async function insertPostHashtag(link, hashtags) {
                 (post_id, hashtag_id)
             VALUES ($1, $2);
         `,
-			[post.id, hashtag.id]
+			[postId, hashtag.id]
 		);
 	}
 }
 
-export async function deleteFromPost(id){
-	const post = await connection.query(`
+export async function deleteFromPost(id) {
+	const post = await connection.query(
+		`
 		DELETE 
 		FROM posts
 		WHERE id = ($1)
-		;`
-		, [id]);
-	
+		;`,
+		[id]
+	);
 }
 
-export async function deleteFromPostHashtag(id){
-	const post_hashtag = await connection.query(`
+export async function deleteFromPostHashtag(id) {
+	const post_hashtag = await connection.query(
+		`
 		DELETE 
 		FROM posts_hashtags 
 		WHERE post_id 
 			IN ($1)
-		RETURNING *;`
-		, [id]);
-	
+		RETURNING *;`,
+		[id]
+	);
+}
+
+export async function deleteFromPostLikes(id) {
+	const post_hashtag = await connection.query(
+		`
+		DELETE 
+		FROM liked_posts 
+		WHERE post_id 
+			IN ($1)
+		RETURNING *;`,
+		[id]
+	);
+}
+
+export async function deleteFromPublishedPosts(id) {
+	const post_hashtag = await connection.query(
+		`
+		DELETE 
+		FROM published_posts 
+		WHERE post_id 
+			IN ($1)
+		RETURNING *;`,
+		[id]
+	);
+}
+
+export async function deleteFromPostsComments(id) {
+	const post_hashtag = await connection.query(
+		`
+		DELETE 
+		FROM comments 
+		WHERE post_id 
+			IN ($1)
+		RETURNING *;`,
+		[id]
+	);
 }

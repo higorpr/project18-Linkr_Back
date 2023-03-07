@@ -1,6 +1,14 @@
 import connection from "../database/db.js";
 
-export async function mainPost(rule, array) {
+export async function mainPost(rule, array, lastPost, firstPost) {
+	let limit = "LIMIT 10";
+	let postRange = "";
+	if (lastPost !== undefined) {
+		limit = "";
+		postRange = ` AND pp.id <= ${lastPost} AND pp.id >= ${firstPost}`;
+	} else if (firstPost !== undefined) {
+		postRange = ` AND pp.id < ${firstPost}`;
+	}
 	return connection.query(
 		`SELECT 
             p.text,
@@ -83,9 +91,10 @@ export async function mainPost(rule, array) {
         LEFT JOIN hashtags h
         ON ph.hashtag_id=h.id
         ${rule}
+        ${postRange}
         GROUP BY  p.id, u.username, u.image, u.id, pp.id
-        ORDER BY pp.created_at DESC 
-        LIMIT 10;`,
+        ORDER BY pp.id DESC 
+        ${limit};`,
 		array
 	);
 }
